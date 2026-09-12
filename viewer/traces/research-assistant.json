@@ -1,0 +1,273 @@
+{
+ "title": "Research assistant \u2014 search, read two pages, summarise",
+ "note": "An ordinary run: one search, two fetches in parallel, then the answer streams in.",
+ "runs": [
+  {
+   "label": "run",
+   "events": [
+    {
+     "t": 0,
+     "lane": "user",
+     "type": "user.message",
+     "label": "What changed in the EU AI Act this quarter?"
+    },
+    {
+     "t": 120,
+     "lane": "model",
+     "type": "model.started",
+     "meta": {
+      "model": "gpt-5"
+     }
+    },
+    {
+     "t": 410,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "Let me look that up."
+    },
+    {
+     "t": 690,
+     "lane": "tool",
+     "type": "tool.call",
+     "label": "web_search",
+     "id": "s1",
+     "meta": {
+      "query": "EU AI Act amendments Q3"
+     }
+    },
+    {
+     "t": 1840,
+     "lane": "tool",
+     "type": "tool.result",
+     "label": "web_search",
+     "id": "s1",
+     "meta": {
+      "hits": 7,
+      "ms": 1150
+     }
+    },
+    {
+     "t": 1900,
+     "lane": "tool",
+     "type": "tool.call",
+     "label": "fetch_page",
+     "id": "f1",
+     "meta": {
+      "url": "eur-lex.europa.eu/\u2026"
+     }
+    },
+    {
+     "t": 1910,
+     "lane": "tool",
+     "type": "tool.call",
+     "label": "fetch_page",
+     "id": "f2",
+     "meta": {
+      "url": "digital-strategy.ec\u2026"
+     }
+    },
+    {
+     "t": 2530,
+     "lane": "tool",
+     "type": "tool.result",
+     "label": "fetch_page",
+     "id": "f2",
+     "meta": {
+      "bytes": 48211
+     }
+    },
+    {
+     "t": 3120,
+     "lane": "tool",
+     "type": "tool.result",
+     "label": "fetch_page",
+     "id": "f1",
+     "meta": {
+      "bytes": 112904
+     }
+    },
+    {
+     "t": 3200,
+     "lane": "model",
+     "type": "model.started",
+     "meta": {
+      "model": "gpt-5"
+     }
+    },
+    {
+     "t": 3480,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "Three"
+    },
+    {
+     "t": 3538,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "things"
+    },
+    {
+     "t": 3596,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "changed."
+    },
+    {
+     "t": 3654,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "First,"
+    },
+    {
+     "t": 3712,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "the"
+    },
+    {
+     "t": 3770,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "general-purpose"
+    },
+    {
+     "t": 3828,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "model"
+    },
+    {
+     "t": 3886,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "obligations"
+    },
+    {
+     "t": 3944,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "moved"
+    },
+    {
+     "t": 4002,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "up"
+    },
+    {
+     "t": 4060,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "by"
+    },
+    {
+     "t": 4118,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "six"
+    },
+    {
+     "t": 4176,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "months."
+    },
+    {
+     "t": 4234,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "Second,"
+    },
+    {
+     "t": 4292,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "the"
+    },
+    {
+     "t": 4350,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "transparency"
+    },
+    {
+     "t": 4408,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "annex"
+    },
+    {
+     "t": 4466,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "now"
+    },
+    {
+     "t": 4524,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "names"
+    },
+    {
+     "t": 4582,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "synthetic"
+    },
+    {
+     "t": 4640,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "media"
+    },
+    {
+     "t": 4698,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "explicitly."
+    },
+    {
+     "t": 4756,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "Third,"
+    },
+    {
+     "t": 4814,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "the"
+    },
+    {
+     "t": 4872,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "sandbox"
+    },
+    {
+     "t": 4930,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "provisions"
+    },
+    {
+     "t": 5028,
+     "lane": "model",
+     "type": "model.completed",
+     "meta": {
+      "tokens": 1842,
+      "finish": "stop"
+     }
+    },
+    {
+     "t": 5048,
+     "lane": "run",
+     "type": "run.completed",
+     "meta": {
+      "ms": 5048
+     }
+    }
+   ]
+  }
+ ]
+}

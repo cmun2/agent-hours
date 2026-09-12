@@ -1,0 +1,95 @@
+{
+  "name": "paper",
+  "author": "cmun2",
+  "blurb": "Light, printable, no ornament.",
+  "colors": {
+    "bg": "#fbfbf8",
+    "panel": "#ffffff",
+    "line": "#e4e1d9",
+    "fg": "#1a1a17",
+    "dim": "#6b6862",
+    "accent": "#0969da"
+  },
+  "lanes": {
+    "user": {
+      "color": "#0969da",
+      "label": "you"
+    },
+    "model": {
+      "color": "#8250df",
+      "label": "model"
+    },
+    "tool": {
+      "color": "#1a7f37",
+      "label": "tool"
+    },
+    "run": {
+      "color": "#6b6862",
+      "label": "run"
+    },
+    "conn": {
+      "color": "#6b6862",
+      "label": "conn"
+    }
+  },
+  "types": {
+    "tool.error": {
+      "color": "#cf222e",
+      "icon": "!"
+    },
+    "run.failed": {
+      "color": "#cf222e",
+      "icon": "x"
+    },
+    "run.completed": {
+      "color": "#1a7f37",
+      "icon": "="
+    },
+    "handoff": {
+      "color": "#bc4c00",
+      "icon": ">"
+    },
+    "approval.requested": {
+      "color": "#bc4c00",
+      "icon": "?"
+    },
+    "approval.granted": {
+      "color": "#1a7f37",
+      "icon": "+"
+    },
+    "tool.call": {
+      "icon": "*"
+    },
+    "tool.result": {
+      "icon": "+"
+    },
+    "text.delta": {
+      "icon": "~"
+    },
+    "model.started": {
+      "icon": "."
+    },
+    "model.completed": {
+      "icon": "."
+    },
+    "conn.lost": {
+      "color": "#cf222e",
+      "icon": "/"
+    },
+    "conn.retry": {
+      "color": "#cf222e",
+      "icon": "^"
+    },
+    "abort.requested": {
+      "color": "#cf222e",
+      "icon": "#"
+    }
+  },
+  "layout": "compact",
+  "font": "sans",
+  "radius": 8,
+  "showMeta": false,
+  "mergeDeltas": true,
+  "glow": false,
+  "stuckAfterMs": 5000
+}

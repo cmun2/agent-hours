@@ -1,2 +1,6 @@
 __pycache__/
 .DS_Store
+
+# Traces generated from your own sessions carry commands and paths.
+run.json
+*.trace.json

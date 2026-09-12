@@ -1,0 +1,96 @@
+{
+  "name": "transit",
+  "author": "cmun2",
+  "blurb": "Lanes as lines. Each actor gets its own colour and stays there.",
+  "colors": {
+    "bg": "#f4f1ea",
+    "panel": "#ffffff",
+    "line": "#d9d2c4",
+    "fg": "#161616",
+    "dim": "#736b5e",
+    "accent": "#e4002b"
+  },
+  "lanes": {
+    "user": {
+      "color": "#0072ce",
+      "label": "\u2501 you"
+    },
+    "model": {
+      "color": "#9b26b6",
+      "label": "\u2501 model"
+    },
+    "tool": {
+      "color": "#00843d",
+      "label": "\u2501 tool"
+    },
+    "conn": {
+      "color": "#ed8b00",
+      "label": "\u2501 net"
+    },
+    "run": {
+      "color": "#e4002b",
+      "label": "\u2501 run"
+    }
+  },
+  "types": {
+    "tool.call": {
+      "icon": "\u25b8"
+    },
+    "tool.result": {
+      "icon": "\u25c2"
+    },
+    "tool.error": {
+      "color": "#e4002b",
+      "icon": "\u2715"
+    },
+    "text.delta": {
+      "icon": "\u2014"
+    },
+    "model.started": {
+      "icon": "\u25cb"
+    },
+    "model.completed": {
+      "icon": "\u25cd"
+    },
+    "handoff": {
+      "color": "#ed8b00",
+      "icon": "\u21c4"
+    },
+    "approval.requested": {
+      "color": "#ed8b00",
+      "icon": "\u25d4"
+    },
+    "approval.granted": {
+      "color": "#00843d",
+      "icon": "\u25c9"
+    },
+    "abort.requested": {
+      "color": "#e4002b",
+      "icon": "\u25a0"
+    },
+    "conn.lost": {
+      "color": "#e4002b",
+      "icon": "\u2301"
+    },
+    "conn.retry": {
+      "color": "#ed8b00",
+      "icon": "\u21bb"
+    },
+    "run.completed": {
+      "color": "#00843d",
+      "icon": "\u2b24"
+    },
+    "run.failed": {
+      "color": "#e4002b",
+      "icon": "\u2b24"
+    }
+  },
+  "layout": "timeline",
+  "font": "sans",
+  "radius": 18,
+  "scale": 1.05,
+  "showMeta": false,
+  "mergeDeltas": true,
+  "glow": false,
+  "stuckAfterMs": 5000
+}

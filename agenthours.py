@@ -262,6 +262,105 @@ def report(session, out=sys.stdout, top=8):
         write()
 
 
+# A gap this long inside a run is the model working; anything longer is the
+# session sitting idle, and the tape skips it rather than drawing empty minutes.
+IDLE_TAPE_MS = 2500
+
+
+def tape(session, top_repeats=40):
+    """Emit the session as an agent-tape trace.
+
+    The viewer draws a flat list of events on a millisecond clock, so the
+    timestamps here are relative to the first thing that happened. Idle gaps
+    are collapsed to a fixed width and labelled with the real duration, because
+    a run that sat overnight is otherwise a screen of nothing.
+    """
+    calls = sorted(session.calls, key=lambda c: c.started)
+    if not calls:
+        return {"title": session.label, "note": "No completed tool calls in this file.",
+                "runs": [{"label": "run", "events": []}]}
+
+    # Which calls repeated work already done -- the thing the CLI never shows.
+    seen = collections.Counter()
+    order = {}
+    for call in calls:
+        if call.detail:
+            key = (call.tool, _shorten(call.detail, 90))
+            seen[key] += 1
+            order[id(call)] = (key, seen[key])
+
+    events = []
+    clock_ms = 0.0
+    previous = None
+    skipped = 0.0
+
+    def add(t, lane, type_, label=None, **meta):
+        event = {"t": int(round(t)), "lane": lane, "type": type_}
+        if label is not None:
+            event["label"] = label
+        meta = {k: v for k, v in meta.items() if v not in (None, "", 0)}
+        if meta:
+            event["meta"] = meta
+        events.append(event)
+
+    for index, call in enumerate(calls):
+        if previous is not None:
+            gap = (call.started - previous).total_seconds()
+            if gap < 0:
+                gap = 0.0
+            if gap >= IDLE_GAP.total_seconds():
+                add(clock_ms, "run", "run.idle", f"idle {clock(gap)} — not drawn to scale")
+                skipped += gap
+                clock_ms += IDLE_TAPE_MS
+            else:
+                if gap > 0:
+                    add(clock_ms, "model", "model.started", took=clock(gap) if gap >= 1 else None)
+                clock_ms += gap * 1000
+
+        held = call.tool in HUMAN_TOOLS
+        cid = f"c{index}"
+        took = call.seconds
+
+        if held:
+            add(clock_ms, "run", "approval.requested", call.tool)
+        else:
+            # Only the second and later runs of the same work are a repeat; the
+            # first time is just the work. This is the count report() prints.
+            nth = order.get(id(call))
+            again = None
+            if nth and nth[1] > 1:
+                again = f"{nth[1]} of {seen[nth[0]]}"
+            add(clock_ms, "tool", "tool.call", call.tool,
+                detail=_shorten(call.detail, 72) or None, again=again)
+            events[-1]["id"] = cid
+
+        clock_ms += took * 1000
+
+        if held:
+            add(clock_ms, "user", "approval.granted", f"after {clock(took)}")
+        else:
+            add(clock_ms, "tool", "tool.error" if call.failed else "tool.result",
+                call.tool, took=clock(took) if took >= 1 else None)
+            events[-1]["id"] = cid
+
+        previous = call.ended
+
+    add(clock_ms, "run", "run.completed", None,
+        calls=len(calls), active=clock(session.active),
+        wall=clock(session.span.total_seconds()),
+        idle_skipped=clock(skipped) if skipped else None)
+
+    failed = sum(1 for c in calls if c.failed)
+    repeated = sum(n - 1 for n in seen.values() if n > 1)
+    note = (f"{len(calls)} tool calls, {clock(session.active)} active over "
+            f"{clock(session.span.total_seconds())}. "
+            f"{repeated} calls repeated work already done; {failed} failed.")
+    if skipped:
+        note += f" Idle gaps totalling {clock(skipped)} are collapsed, not drawn to scale."
+    return {"title": f"{session.label} — {os.path.basename(session.path)}",
+            "note": note, "runs": [{"label": "run", "events": events}]}
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(
         prog="agent-hours",
@@ -271,14 +370,30 @@ def main(argv=None):
     ap.add_argument("--from", dest="kind", choices=("claude", "codex"), help="only this CLI")
     ap.add_argument("--all", type=int, metavar="N", help="report on the N most recent sessions")
     ap.add_argument("--top", type=int, default=8, help="rows per section (default 8)")
+    ap.add_argument("--tape", action="store_true",
+                    help="emit the session as a trace for viewer/index.html instead of a report")
+    ap.add_argument("--out", metavar="FILE", help="write the trace here instead of stdout")
     args = ap.parse_args(argv)
 
     readers = {"claude": read_claude, "codex": read_codex}
 
+    def emit(session):
+        if not args.tape:
+            report(session, top=args.top)
+            return
+        payload = json.dumps(tape(session), ensure_ascii=False, indent=1)
+        if args.out:
+            with open(args.out, "w") as handle:
+                handle.write(payload + "\n")
+            print(f"Wrote {args.out}. Open viewer/index.html and drop it on the page.",
+                  file=sys.stderr)
+        else:
+            print(payload)
+
     if args.session:
         path = args.session
         kind = args.kind or ("codex" if "codex" in path else "claude")
-        report(readers[kind](path), top=args.top)
+        emit(readers[kind](path))
         return 0
 
     found = discover(args.kind)
@@ -295,8 +410,12 @@ def main(argv=None):
         print()
         return 0
 
+    if args.tape and (args.all or 1) > 1:
+        print("--tape reads one session at a time; pass a path or drop --all.", file=sys.stderr)
+        return 1
+
     for kind, path in found[: args.all or 1]:
-        report(readers[kind](path), top=args.top)
+        emit(readers[kind](path))
     return 0
 
 

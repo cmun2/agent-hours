@@ -1,0 +1,96 @@
+{
+  "name": "projector",
+  "author": "cmun2",
+  "blurb": "For the back of the room. Big, few rows, no metadata.",
+  "colors": {
+    "bg": "#101418",
+    "panel": "#171d24",
+    "line": "#2a333d",
+    "fg": "#f5f8fa",
+    "dim": "#8fa0b0",
+    "accent": "#ffd166"
+  },
+  "lanes": {
+    "user": {
+      "color": "#8ecae6",
+      "label": "you"
+    },
+    "model": {
+      "color": "#c8b6ff",
+      "label": "model"
+    },
+    "tool": {
+      "color": "#95d5b2",
+      "label": "tool"
+    },
+    "conn": {
+      "color": "#8fa0b0",
+      "label": "net"
+    },
+    "run": {
+      "color": "#ffd166",
+      "label": "run"
+    }
+  },
+  "types": {
+    "tool.call": {
+      "icon": "\u25b6"
+    },
+    "tool.result": {
+      "icon": "\u2713"
+    },
+    "tool.error": {
+      "color": "#ff8fa3",
+      "icon": "\u2715"
+    },
+    "text.delta": {
+      "icon": "\u2026"
+    },
+    "model.started": {
+      "icon": "\u25d0"
+    },
+    "model.completed": {
+      "icon": "\u25d1"
+    },
+    "handoff": {
+      "color": "#ffd166",
+      "icon": "\u21e2"
+    },
+    "approval.requested": {
+      "color": "#ffd166",
+      "icon": "\u270b"
+    },
+    "approval.granted": {
+      "color": "#95d5b2",
+      "icon": "\u2713"
+    },
+    "abort.requested": {
+      "color": "#ff8fa3",
+      "icon": "\u23f9"
+    },
+    "conn.lost": {
+      "color": "#ff8fa3",
+      "icon": "\u26a1"
+    },
+    "conn.retry": {
+      "color": "#ffd166",
+      "icon": "\u21bb"
+    },
+    "run.completed": {
+      "color": "#95d5b2",
+      "icon": "\u2713"
+    },
+    "run.failed": {
+      "color": "#ff8fa3",
+      "icon": "\u2715"
+    }
+  },
+  "layout": "cards",
+  "font": "sans",
+  "radius": 16,
+  "scale": 1.35,
+  "showMeta": false,
+  "mergeDeltas": true,
+  "glow": false,
+  "stuckAfterMs": 3000
+}

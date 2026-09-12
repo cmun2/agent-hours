@@ -1,0 +1,118 @@
+{
+ "title": "A run that stops without saying so",
+ "note": "The tool call at 1.2s never comes back, the transport keeps reconnecting, and the abort at 32s does not stop it. Nothing here is an error message \u2014 which is exactly why this is hard to see in a terminal.",
+ "runs": [
+  {
+   "label": "run",
+   "events": [
+    {
+     "t": 0,
+     "lane": "user",
+     "type": "user.message",
+     "label": "Summarise the incident channel"
+    },
+    {
+     "t": 140,
+     "lane": "model",
+     "type": "model.started",
+     "meta": {
+      "model": "local/llama"
+     }
+    },
+    {
+     "t": 980,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "Pulling the channel history."
+    },
+    {
+     "t": 1240,
+     "lane": "tool",
+     "type": "tool.call",
+     "label": "slack_history",
+     "id": "h1",
+     "meta": {
+      "channel": "#inc-441"
+     }
+    },
+    {
+     "t": 4200,
+     "lane": "conn",
+     "type": "conn.lost",
+     "label": "upstream closed"
+    },
+    {
+     "t": 4600,
+     "lane": "conn",
+     "type": "conn.retry",
+     "label": "attempt 1",
+     "meta": {
+      "backoff_ms": 400
+     }
+    },
+    {
+     "t": 6200,
+     "lane": "conn",
+     "type": "conn.retry",
+     "label": "attempt 2",
+     "meta": {
+      "backoff_ms": 1200
+     }
+    },
+    {
+     "t": 9400,
+     "lane": "conn",
+     "type": "conn.retry",
+     "label": "attempt 3",
+     "meta": {
+      "backoff_ms": 3000
+     }
+    },
+    {
+     "t": 15800,
+     "lane": "conn",
+     "type": "conn.retry",
+     "label": "attempt 4",
+     "meta": {
+      "backoff_ms": 6000
+     }
+    },
+    {
+     "t": 28600,
+     "lane": "conn",
+     "type": "conn.retry",
+     "label": "attempt 5",
+     "meta": {
+      "backoff_ms": 12000
+     }
+    },
+    {
+     "t": 32000,
+     "lane": "user",
+     "type": "abort.requested",
+     "label": "ctrl-c"
+    },
+    {
+     "t": 34100,
+     "lane": "conn",
+     "type": "conn.retry",
+     "label": "attempt 6",
+     "meta": {
+      "backoff_ms": 24000,
+      "after_abort": true
+     }
+    },
+    {
+     "t": 58000,
+     "lane": "conn",
+     "type": "conn.retry",
+     "label": "attempt 7",
+     "meta": {
+      "backoff_ms": 48000,
+      "after_abort": true
+     }
+    }
+   ]
+  }
+ ]
+}

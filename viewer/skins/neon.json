@@ -1,0 +1,95 @@
+{
+  "name": "neon",
+  "author": "cmun2",
+  "blurb": "Loud. Glows. Good on a second monitor.",
+  "colors": {
+    "bg": "#07070f",
+    "panel": "#0f0f1c",
+    "line": "#242440",
+    "fg": "#e9e9ff",
+    "dim": "#7676a8",
+    "accent": "#22d3ee"
+  },
+  "lanes": {
+    "user": {
+      "color": "#22d3ee",
+      "label": "YOU"
+    },
+    "model": {
+      "color": "#a78bfa",
+      "label": "MODEL"
+    },
+    "tool": {
+      "color": "#34d399",
+      "label": "TOOL"
+    },
+    "run": {
+      "color": "#7676a8",
+      "label": "RUN"
+    },
+    "conn": {
+      "color": "#7676a8",
+      "label": "CONN"
+    }
+  },
+  "types": {
+    "tool.error": {
+      "color": "#fb7185",
+      "icon": "\u25b2"
+    },
+    "run.failed": {
+      "color": "#fb7185",
+      "icon": "\u25a0"
+    },
+    "run.completed": {
+      "color": "#34d399",
+      "icon": "\u25cf"
+    },
+    "handoff": {
+      "color": "#fbbf24",
+      "icon": "\u25b6"
+    },
+    "approval.requested": {
+      "color": "#fbbf24",
+      "icon": "\u25c8"
+    },
+    "approval.granted": {
+      "color": "#34d399",
+      "icon": "\u25c9"
+    },
+    "tool.call": {
+      "icon": "\u25c6"
+    },
+    "tool.result": {
+      "icon": "\u25c7"
+    },
+    "text.delta": {
+      "icon": "\u00b7"
+    },
+    "model.started": {
+      "icon": "\u25cb"
+    },
+    "model.completed": {
+      "icon": "\u25cb"
+    },
+    "conn.lost": {
+      "color": "#fb7185",
+      "icon": "/"
+    },
+    "conn.retry": {
+      "color": "#fb7185",
+      "icon": "^"
+    },
+    "abort.requested": {
+      "color": "#fb7185",
+      "icon": "#"
+    }
+  },
+  "layout": "cards",
+  "font": "mono",
+  "radius": 14,
+  "showMeta": true,
+  "mergeDeltas": true,
+  "glow": true,
+  "stuckAfterMs": 5000
+}

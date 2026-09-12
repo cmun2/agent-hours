@@ -1,0 +1,92 @@
+{
+  "name": "mono",
+  "author": "cmun2",
+  "blurb": "One colour. Everything else is grey. Errors are the only thing that shouts.",
+  "colors": {
+    "bg": "#111111",
+    "panel": "#171717",
+    "line": "#262626",
+    "fg": "#ededed",
+    "dim": "#6e6e6e",
+    "accent": "#ededed"
+  },
+  "lanes": {
+    "user": {
+      "color": "#ededed",
+      "label": "you"
+    },
+    "model": {
+      "color": "#9a9a9a",
+      "label": "model"
+    },
+    "tool": {
+      "color": "#9a9a9a",
+      "label": "tool"
+    },
+    "conn": {
+      "color": "#6e6e6e",
+      "label": "conn"
+    },
+    "run": {
+      "color": "#6e6e6e",
+      "label": "run"
+    }
+  },
+  "types": {
+    "tool.call": {
+      "icon": "\u00b7"
+    },
+    "tool.result": {
+      "icon": "\u00b7"
+    },
+    "tool.error": {
+      "color": "#ff4d4d",
+      "icon": "\u25cf"
+    },
+    "text.delta": {
+      "icon": " "
+    },
+    "model.started": {
+      "icon": " "
+    },
+    "model.completed": {
+      "icon": " "
+    },
+    "handoff": {
+      "icon": "\u00b7"
+    },
+    "approval.requested": {
+      "color": "#ffffff",
+      "icon": "\u25cf"
+    },
+    "approval.granted": {
+      "icon": "\u00b7"
+    },
+    "abort.requested": {
+      "color": "#ff4d4d",
+      "icon": "\u25cf"
+    },
+    "conn.lost": {
+      "color": "#ff4d4d",
+      "icon": "\u25cf"
+    },
+    "conn.retry": {
+      "icon": "\u00b7"
+    },
+    "run.completed": {
+      "icon": "\u00b7"
+    },
+    "run.failed": {
+      "color": "#ff4d4d",
+      "icon": "\u25cf"
+    }
+  },
+  "layout": "timeline",
+  "font": "sans",
+  "radius": 6,
+  "scale": 0.95,
+  "showMeta": false,
+  "mergeDeltas": true,
+  "glow": false,
+  "stuckAfterMs": 6000
+}

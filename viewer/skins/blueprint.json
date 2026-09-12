@@ -1,0 +1,96 @@
+{
+  "name": "blueprint",
+  "author": "cmun2",
+  "blurb": "Drafting-table blue. Thin, technical, everything labelled.",
+  "colors": {
+    "bg": "#0b1f3a",
+    "panel": "#0f2a4d",
+    "line": "#1d456f",
+    "fg": "#cfe3ff",
+    "dim": "#6f96c4",
+    "accent": "#5ad2f4"
+  },
+  "lanes": {
+    "user": {
+      "color": "#ffffff",
+      "label": "USR"
+    },
+    "model": {
+      "color": "#5ad2f4",
+      "label": "MDL"
+    },
+    "tool": {
+      "color": "#8ff0c0",
+      "label": "TL "
+    },
+    "conn": {
+      "color": "#6f96c4",
+      "label": "NET"
+    },
+    "run": {
+      "color": "#cfe3ff",
+      "label": "RUN"
+    }
+  },
+  "types": {
+    "tool.call": {
+      "icon": "\u250c"
+    },
+    "tool.result": {
+      "icon": "\u2514"
+    },
+    "tool.error": {
+      "color": "#ff9d9d",
+      "icon": "\u2573"
+    },
+    "text.delta": {
+      "icon": "\u2502"
+    },
+    "model.started": {
+      "icon": "\u256d"
+    },
+    "model.completed": {
+      "icon": "\u2570"
+    },
+    "handoff": {
+      "color": "#ffd98e",
+      "icon": "\u256b"
+    },
+    "approval.requested": {
+      "color": "#ffd98e",
+      "icon": "\u25c7"
+    },
+    "approval.granted": {
+      "color": "#8ff0c0",
+      "icon": "\u25c6"
+    },
+    "abort.requested": {
+      "color": "#ff9d9d",
+      "icon": "\u25a3"
+    },
+    "conn.lost": {
+      "color": "#ff9d9d",
+      "icon": "\u2571"
+    },
+    "conn.retry": {
+      "color": "#ffd98e",
+      "icon": "\u21ba"
+    },
+    "run.completed": {
+      "color": "#8ff0c0",
+      "icon": "\u2550"
+    },
+    "run.failed": {
+      "color": "#ff9d9d",
+      "icon": "\u2550"
+    }
+  },
+  "layout": "timeline",
+  "font": "mono",
+  "radius": 2,
+  "scale": 0.92,
+  "showMeta": true,
+  "mergeDeltas": true,
+  "glow": false,
+  "stuckAfterMs": 5000
+}

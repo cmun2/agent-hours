@@ -1,0 +1,95 @@
+{
+  "name": "contrast",
+  "author": "cmun2",
+  "blurb": "Maximum contrast, large type, no colour carrying meaning on its own.",
+  "colors": {
+    "bg": "#ffffff",
+    "panel": "#ffffff",
+    "line": "#000000",
+    "fg": "#000000",
+    "dim": "#3d3d3d",
+    "accent": "#0000cc"
+  },
+  "lanes": {
+    "user": {
+      "color": "#000000",
+      "label": "YOU"
+    },
+    "model": {
+      "color": "#0000cc",
+      "label": "MODEL"
+    },
+    "tool": {
+      "color": "#006600",
+      "label": "TOOL"
+    },
+    "conn": {
+      "color": "#3d3d3d",
+      "label": "NET"
+    },
+    "run": {
+      "color": "#000000",
+      "label": "RUN"
+    }
+  },
+  "types": {
+    "tool.call": {
+      "icon": "[>]"
+    },
+    "tool.result": {
+      "icon": "[<]"
+    },
+    "tool.error": {
+      "color": "#cc0000",
+      "icon": "[!]"
+    },
+    "text.delta": {
+      "icon": "[.]"
+    },
+    "model.started": {
+      "icon": "[(]"
+    },
+    "model.completed": {
+      "icon": "[)]"
+    },
+    "handoff": {
+      "icon": "[=]"
+    },
+    "approval.requested": {
+      "color": "#cc0000",
+      "icon": "[?]"
+    },
+    "approval.granted": {
+      "color": "#006600",
+      "icon": "[y]"
+    },
+    "abort.requested": {
+      "color": "#cc0000",
+      "icon": "[X]"
+    },
+    "conn.lost": {
+      "color": "#cc0000",
+      "icon": "[/]"
+    },
+    "conn.retry": {
+      "color": "#cc0000",
+      "icon": "[r]"
+    },
+    "run.completed": {
+      "color": "#006600",
+      "icon": "[=]"
+    },
+    "run.failed": {
+      "color": "#cc0000",
+      "icon": "[X]"
+    }
+  },
+  "layout": "timeline",
+  "font": "sans",
+  "radius": 4,
+  "scale": 1.3,
+  "showMeta": true,
+  "mergeDeltas": true,
+  "glow": false,
+  "stuckAfterMs": 4000
+}

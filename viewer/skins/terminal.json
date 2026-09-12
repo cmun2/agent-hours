@@ -1,0 +1,96 @@
+{
+  "name": "terminal",
+  "author": "cmun2",
+  "blurb": "Reads like the log you wish it had printed.",
+  "colors": {
+    "bg": "#000000",
+    "panel": "#000000",
+    "line": "#1c1c1c",
+    "fg": "#c8c8c8",
+    "dim": "#5a5a5a",
+    "accent": "#00c853"
+  },
+  "lanes": {
+    "user": {
+      "color": "#c8c8c8",
+      "label": "$"
+    },
+    "model": {
+      "color": "#7aa6ff",
+      "label": "llm"
+    },
+    "tool": {
+      "color": "#00c853",
+      "label": "exec"
+    },
+    "conn": {
+      "color": "#5a5a5a",
+      "label": "net"
+    },
+    "run": {
+      "color": "#5a5a5a",
+      "label": "---"
+    }
+  },
+  "types": {
+    "tool.call": {
+      "icon": "+"
+    },
+    "tool.result": {
+      "icon": "-"
+    },
+    "tool.error": {
+      "color": "#ff5252",
+      "icon": "E"
+    },
+    "text.delta": {
+      "icon": "|"
+    },
+    "model.started": {
+      "icon": ">"
+    },
+    "model.completed": {
+      "icon": "<"
+    },
+    "handoff": {
+      "color": "#ffab40",
+      "icon": "@"
+    },
+    "approval.requested": {
+      "color": "#ffab40",
+      "icon": "?"
+    },
+    "approval.granted": {
+      "color": "#00c853",
+      "icon": "y"
+    },
+    "abort.requested": {
+      "color": "#ff5252",
+      "icon": "^C"
+    },
+    "conn.lost": {
+      "color": "#ff5252",
+      "icon": "x"
+    },
+    "conn.retry": {
+      "color": "#ffab40",
+      "icon": "r"
+    },
+    "run.completed": {
+      "color": "#00c853",
+      "icon": "ok"
+    },
+    "run.failed": {
+      "color": "#ff5252",
+      "icon": "!!"
+    }
+  },
+  "layout": "compact",
+  "font": "mono",
+  "radius": 0,
+  "scale": 0.95,
+  "showMeta": true,
+  "mergeDeltas": true,
+  "glow": false,
+  "stuckAfterMs": 4000
+}
