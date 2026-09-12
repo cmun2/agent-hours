@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>agent-tape — skins</title>
+<style>
+*{box-sizing:border-box}
+:root{--font-sans:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+ --font-mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+ --pbg:#0d1117;--ppanel:#161b22;--pline:#21262d;--pfg:#e6edf3;--pdim:#8b949e;--pacc:#58a6ff}
+@media (prefers-color-scheme:light){:root{--pbg:#fbfbf8;--ppanel:#fff;--pline:#e4e1d9;
+ --pfg:#1a1a17;--pdim:#6b6862;--pacc:#0969da}}
+body{margin:0;background:var(--pbg);color:var(--pfg);font:14px/1.55 var(--font-sans)}
+.wrap{max-width:72rem;margin:0 auto;padding:1.5rem 1rem 4rem}
+h1{font-size:1.05rem;font-weight:650;margin:0 0 .15rem;letter-spacing:-.01em}
+p.sub{color:var(--pdim);font-size:.85rem;margin:0 0 .5rem;max-width:46rem}
+p.sub a{color:var(--pacc)}
+.back{font-size:.8rem;color:var(--pacc);text-decoration:none}
+.grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(21rem,1fr));margin-top:1.2rem}
+.card{border:1px solid var(--pline);border-radius:12px;overflow:hidden;background:var(--ppanel)}
+.card .meta{padding:.65rem .8rem;border-top:1px solid var(--pline);
+ display:flex;justify-content:space-between;align-items:baseline;gap:.6rem}
+.card .meta h2{font-size:.85rem;margin:0;font-weight:650}
+.card .meta .by{font:.7rem/1.5 var(--font-mono);color:var(--pdim)}
+.card .blurb{padding:0 .8rem .5rem;font-size:.78rem;color:var(--pdim)}
+.card .acts{padding:0 .8rem .75rem;display:flex;gap:.4rem}
+.card a.btn{font-size:.75rem;padding:.28rem .55rem;border-radius:6px;border:1px solid var(--pline);
+ color:var(--pfg);text-decoration:none}
+.card a.btn.primary{border-color:var(--pacc);color:var(--pacc)}
+/* preview: fully self-contained, styled from the skin only */
+.card{display:flex;flex-direction:column}
+.pv{padding:.45rem .3rem .5rem;overflow:hidden;flex:1;min-height:11.5rem}
+.pv .body{overflow:hidden}
+.pv .ev{display:grid;grid-template-columns:2.9rem 3.2rem minmax(0,1fr);gap:.4rem;align-items:baseline;
+ padding:.1rem .5rem;border-radius:5px}
+.pv .t{font:.62rem/1.5 var(--font-mono);text-align:right;font-variant-numeric:tabular-nums}
+.pv .lane{font:.62rem/1.5 var(--font-mono)}
+.pv .body{display:flex;gap:.35rem;align-items:baseline;min-width:0}
+.pv .icon{width:.85rem;flex:none;text-align:center;font:.7rem/1.5 var(--font-mono)}
+.pv .type{font:.66rem/1.5 var(--font-mono);flex:none}
+.pv .label{font-size:.72rem;flex:0 1 auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pv .m{font:.62rem/1.5 var(--font-mono);flex:1 1 0;min-width:0;overflow:hidden;
+ text-overflow:ellipsis;white-space:nowrap}
+.pv .rep{font:.6rem/1.4 var(--font-mono);border-radius:999px;padding:0 .28rem;flex:none}
+.pv.cards .ev{grid-template-columns:2.9rem minmax(0,1fr);border:1px solid;margin:.2rem .35rem;
+ padding:.3rem .5rem;border-radius:8px}
+.pv.cards .lane{display:none}
+.pv.compact .ev{padding:0 .5rem}
+.add{margin-top:1.6rem;border:1px dashed var(--pline);border-radius:12px;padding:1rem;
+ font-size:.82rem;color:var(--pdim)}
+.add code{font:.78rem var(--font-mono)}
+.add a{color:var(--pacc)}
+</style></head><body><div class="wrap">
+<a class="back" href="index.html">&larr; back to the inspector</a>
+<h1 style="margin-top:.5rem">Skins</h1>
+<p class="sub">Every skin in <code>skins/</code>, drawing the same run. A skin is one JSON file and
+decides all of this — colours, lane names, the icon for each event type, the layout, and how long a
+tool may go unanswered before the view says so.</p>
+
+<div class="grid" id="grid"></div>
+
+<div class="add">
+  <strong>Adding one.</strong> Write a JSON file, drop it in <code>skins/</code>, and it appears
+  here and in the picker. The schema and every stylable event type are in
+  <a href="skins/README.md">skins/README.md</a>. Open a pull request when it looks right — one skin
+  per file, with an <code>author</code> and a one-line <code>blurb</code>. There is no taste
+  requirement: legible on a projector, all one colour, or nothing but tool calls are all reasonable
+  things to want.
+</div>
+</div>
+<script>
+const SKINS = {"blueprint":{"name":"blueprint","author":"cmun2","blurb":"Drafting-table blue. Thin, technical, everything labelled.","colors":{"bg":"#0b1f3a","panel":"#0f2a4d","line":"#1d456f","fg":"#cfe3ff","dim":"#6f96c4","accent":"#5ad2f4"},"lanes":{"user":{"color":"#ffffff","label":"USR"},"model":{"color":"#5ad2f4","label":"MDL"},"tool":{"color":"#8ff0c0","label":"TL "},"conn":{"color":"#6f96c4","label":"NET"},"run":{"color":"#cfe3ff","label":"RUN"}},"types":{"tool.call":{"icon":"┌"},"tool.result":{"icon":"└"},"tool.error":{"color":"#ff9d9d","icon":"╳"},"text.delta":{"icon":"│"},"model.started":{"icon":"╭"},"model.completed":{"icon":"╰"},"handoff":{"color":"#ffd98e","icon":"╫"},"approval.requested":{"color":"#ffd98e","icon":"◇"},"approval.granted":{"color":"#8ff0c0","icon":"◆"},"abort.requested":{"color":"#ff9d9d","icon":"▣"},"conn.lost":{"color":"#ff9d9d","icon":"╱"},"conn.retry":{"color":"#ffd98e","icon":"↺"},"run.completed":{"color":"#8ff0c0","icon":"═"},"run.failed":{"color":"#ff9d9d","icon":"═"}},"layout":"timeline","font":"mono","radius":2,"scale":0.92,"showMeta":true,"mergeDeltas":true,"glow":false,"stuckAfterMs":5000},"contrast":{"name":"contrast","author":"cmun2","blurb":"Maximum contrast, large type, no colour carrying meaning on its own.","colors":{"bg":"#ffffff","panel":"#ffffff","line":"#000000","fg":"#000000","dim":"#3d3d3d","accent":"#0000cc"},"lanes":{"user":{"color":"#000000","label":"YOU"},"model":{"color":"#0000cc","label":"MODEL"},"tool":{"color":"#006600","label":"TOOL"},"conn":{"color":"#3d3d3d","label":"NET"},"run":{"color":"#000000","label":"RUN"}},"types":{"tool.call":{"icon":"[>]"},"tool.result":{"icon":"[<]"},"tool.error":{"color":"#cc0000","icon":"[!]"},"text.delta":{"icon":"[.]"},"model.started":{"icon":"[(]"},"model.completed":{"icon":"[)]"},"handoff":{"icon":"[=]"},"approval.requested":{"color":"#cc0000","icon":"[?]"},"approval.granted":{"color":"#006600","icon":"[y]"},"abort.requested":{"color":"#cc0000","icon":"[X]"},"conn.lost":{"color":"#cc0000","icon":"[/]"},"conn.retry":{"color":"#cc0000","icon":"[r]"},"run.completed":{"color":"#006600","icon":"[=]"},"run.failed":{"color":"#cc0000","icon":"[X]"}},"layout":"timeline","font":"sans","radius":4,"scale":1.3,"showMeta":true,"mergeDeltas":true,"glow":false,"stuckAfterMs":4000},"midnight":{"name":"midnight","author":"cmun2","blurb":"Quiet dark. The default.","colors":{"bg":"#0d1117","panel":"#161b22","line":"#21262d","fg":"#e6edf3","dim":"#8b949e","accent":"#58a6ff"},"lanes":{"user":{"color":"#a5d6ff","label":"you"},"model":{"color":"#d2a8ff","label":"model"},"tool":{"color":"#7ee787","label":"tool"},"run":{"color":"#8b949e","label":"run"},"conn":{"color":"#8b949e","label":"conn"}},"types":{"tool.error":{"color":"#ff7b72","icon":"!"},"run.failed":{"color":"#ff7b72","icon":"x"},"run.completed":{"color":"#7ee787","icon":"="},"handoff":{"color":"#ffa657","icon":">"},"approval.requested":{"color":"#ffa657","icon":"?"},"approval.granted":{"color":"#7ee787","icon":"+"},"tool.call":{"icon":"*"},"tool.result":{"icon":"+"},"text.delta":{"icon":"~"},"model.started":{"icon":"."},"model.completed":{"icon":"."},"conn.lost":{"color":"#ff7b72","icon":"/"},"conn.retry":{"color":"#ff7b72","icon":"^"},"abort.requested":{"color":"#ff7b72","icon":"#"}},"layout":"timeline","font":"mono","radius":11,"showMeta":true,"mergeDeltas":true,"glow":false,"stuckAfterMs":5000},"mono":{"name":"mono","author":"cmun2","blurb":"One colour. Everything else is grey. Errors are the only thing that shouts.","colors":{"bg":"#111111","panel":"#171717","line":"#262626","fg":"#ededed","dim":"#6e6e6e","accent":"#ededed"},"lanes":{"user":{"color":"#ededed","label":"you"},"model":{"color":"#9a9a9a","label":"model"},"tool":{"color":"#9a9a9a","label":"tool"},"conn":{"color":"#6e6e6e","label":"conn"},"run":{"color":"#6e6e6e","label":"run"}},"types":{"tool.call":{"icon":"·"},"tool.result":{"icon":"·"},"tool.error":{"color":"#ff4d4d","icon":"●"},"text.delta":{"icon":" "},"model.started":{"icon":" "},"model.completed":{"icon":" "},"handoff":{"icon":"·"},"approval.requested":{"color":"#ffffff","icon":"●"},"approval.granted":{"icon":"·"},"abort.requested":{"color":"#ff4d4d","icon":"●"},"conn.lost":{"color":"#ff4d4d","icon":"●"},"conn.retry":{"icon":"·"},"run.completed":{"icon":"·"},"run.failed":{"color":"#ff4d4d","icon":"●"}},"layout":"timeline","font":"sans","radius":6,"scale":0.95,"showMeta":false,"mergeDeltas":true,"glow":false,"stuckAfterMs":6000},"neon":{"name":"neon","author":"cmun2","blurb":"Loud. Glows. Good on a second monitor.","colors":{"bg":"#07070f","panel":"#0f0f1c","line":"#242440","fg":"#e9e9ff","dim":"#7676a8","accent":"#22d3ee"},"lanes":{"user":{"color":"#22d3ee","label":"YOU"},"model":{"color":"#a78bfa","label":"MODEL"},"tool":{"color":"#34d399","label":"TOOL"},"run":{"color":"#7676a8","label":"RUN"},"conn":{"color":"#7676a8","label":"CONN"}},"types":{"tool.error":{"color":"#fb7185","icon":"▲"},"run.failed":{"color":"#fb7185","icon":"■"},"run.completed":{"color":"#34d399","icon":"●"},"handoff":{"color":"#fbbf24","icon":"▶"},"approval.requested":{"color":"#fbbf24","icon":"◈"},"approval.granted":{"color":"#34d399","icon":"◉"},"tool.call":{"icon":"◆"},"tool.result":{"icon":"◇"},"text.delta":{"icon":"·"},"model.started":{"icon":"○"},"model.completed":{"icon":"○"},"conn.lost":{"color":"#fb7185","icon":"/"},"conn.retry":{"color":"#fb7185","icon":"^"},"abort.requested":{"color":"#fb7185","icon":"#"}},"layout":"cards","font":"mono","radius":14,"showMeta":true,"mergeDeltas":true,"glow":true,"stuckAfterMs":5000},"paper":{"name":"paper","author":"cmun2","blurb":"Light, printable, no ornament.","colors":{"bg":"#fbfbf8","panel":"#ffffff","line":"#e4e1d9","fg":"#1a1a17","dim":"#6b6862","accent":"#0969da"},"lanes":{"user":{"color":"#0969da","label":"you"},"model":{"color":"#8250df","label":"model"},"tool":{"color":"#1a7f37","label":"tool"},"run":{"color":"#6b6862","label":"run"},"conn":{"color":"#6b6862","label":"conn"}},"types":{"tool.error":{"color":"#cf222e","icon":"!"},"run.failed":{"color":"#cf222e","icon":"x"},"run.completed":{"color":"#1a7f37","icon":"="},"handoff":{"color":"#bc4c00","icon":">"},"approval.requested":{"color":"#bc4c00","icon":"?"},"approval.granted":{"color":"#1a7f37","icon":"+"},"tool.call":{"icon":"*"},"tool.result":{"icon":"+"},"text.delta":{"icon":"~"},"model.started":{"icon":"."},"model.completed":{"icon":"."},"conn.lost":{"color":"#cf222e","icon":"/"},"conn.retry":{"color":"#cf222e","icon":"^"},"abort.requested":{"color":"#cf222e","icon":"#"}},"layout":"compact","font":"sans","radius":8,"showMeta":false,"mergeDeltas":true,"glow":false,"stuckAfterMs":5000},"projector":{"name":"projector","author":"cmun2","blurb":"For the back of the room. Big, few rows, no metadata.","colors":{"bg":"#101418","panel":"#171d24","line":"#2a333d","fg":"#f5f8fa","dim":"#8fa0b0","accent":"#ffd166"},"lanes":{"user":{"color":"#8ecae6","label":"you"},"model":{"color":"#c8b6ff","label":"model"},"tool":{"color":"#95d5b2","label":"tool"},"conn":{"color":"#8fa0b0","label":"net"},"run":{"color":"#ffd166","label":"run"}},"types":{"tool.call":{"icon":"▶"},"tool.result":{"icon":"✓"},"tool.error":{"color":"#ff8fa3","icon":"✕"},"text.delta":{"icon":"…"},"model.started":{"icon":"◐"},"model.completed":{"icon":"◑"},"handoff":{"color":"#ffd166","icon":"⇢"},"approval.requested":{"color":"#ffd166","icon":"✋"},"approval.granted":{"color":"#95d5b2","icon":"✓"},"abort.requested":{"color":"#ff8fa3","icon":"⏹"},"conn.lost":{"color":"#ff8fa3","icon":"⚡"},"conn.retry":{"color":"#ffd166","icon":"↻"},"run.completed":{"color":"#95d5b2","icon":"✓"},"run.failed":{"color":"#ff8fa3","icon":"✕"}},"layout":"cards","font":"sans","radius":16,"scale":1.35,"showMeta":false,"mergeDeltas":true,"glow":false,"stuckAfterMs":3000},"terminal":{"name":"terminal","author":"cmun2","blurb":"Reads like the log you wish it had printed.","colors":{"bg":"#000000","panel":"#000000","line":"#1c1c1c","fg":"#c8c8c8","dim":"#5a5a5a","accent":"#00c853"},"lanes":{"user":{"color":"#c8c8c8","label":"$"},"model":{"color":"#7aa6ff","label":"llm"},"tool":{"color":"#00c853","label":"exec"},"conn":{"color":"#5a5a5a","label":"net"},"run":{"color":"#5a5a5a","label":"---"}},"types":{"tool.call":{"icon":"+"},"tool.result":{"icon":"-"},"tool.error":{"color":"#ff5252","icon":"E"},"text.delta":{"icon":"|"},"model.started":{"icon":">"},"model.completed":{"icon":"<"},"handoff":{"color":"#ffab40","icon":"@"},"approval.requested":{"color":"#ffab40","icon":"?"},"approval.granted":{"color":"#00c853","icon":"y"},"abort.requested":{"color":"#ff5252","icon":"^C"},"conn.lost":{"color":"#ff5252","icon":"x"},"conn.retry":{"color":"#ffab40","icon":"r"},"run.completed":{"color":"#00c853","icon":"ok"},"run.failed":{"color":"#ff5252","icon":"!!"}},"layout":"compact","font":"mono","radius":0,"scale":0.95,"showMeta":true,"mergeDeltas":true,"glow":false,"stuckAfterMs":4000},"transit":{"name":"transit","author":"cmun2","blurb":"Lanes as lines. Each actor gets its own colour and stays there.","colors":{"bg":"#f4f1ea","panel":"#ffffff","line":"#d9d2c4","fg":"#161616","dim":"#736b5e","accent":"#e4002b"},"lanes":{"user":{"color":"#0072ce","label":"━ you"},"model":{"color":"#9b26b6","label":"━ model"},"tool":{"color":"#00843d","label":"━ tool"},"conn":{"color":"#ed8b00","label":"━ net"},"run":{"color":"#e4002b","label":"━ run"}},"types":{"tool.call":{"icon":"▸"},"tool.result":{"icon":"◂"},"tool.error":{"color":"#e4002b","icon":"✕"},"text.delta":{"icon":"—"},"model.started":{"icon":"○"},"model.completed":{"icon":"◍"},"handoff":{"color":"#ed8b00","icon":"⇄"},"approval.requested":{"color":"#ed8b00","icon":"◔"},"approval.granted":{"color":"#00843d","icon":"◉"},"abort.requested":{"color":"#e4002b","icon":"■"},"conn.lost":{"color":"#e4002b","icon":"⌁"},"conn.retry":{"color":"#ed8b00","icon":"↻"},"run.completed":{"color":"#00843d","icon":"⬤"},"run.failed":{"color":"#e4002b","icon":"⬤"}},"layout":"timeline","font":"sans","radius":18,"scale":1.05,"showMeta":false,"mergeDeltas":true,"glow":false,"stuckAfterMs":5000}};
+const PREVIEW = [{"t": 0, "lane": "user", "type": "user.message", "label": "summarise the incident channel"}, {"t": 140, "lane": "model", "type": "model.started", "meta": {"model": "gpt-5"}}, {"t": 980, "lane": "model", "type": "text.delta", "label": "Pulling the channel history."}, {"t": 1240, "lane": "tool", "type": "tool.call", "label": "slack_history", "id": "h1", "meta": {"channel": "#inc-441"}}, {"t": 4200, "lane": "conn", "type": "conn.lost", "label": "upstream closed"}, {"t": 6200, "lane": "conn", "type": "conn.retry", "label": "attempt 2", "meta": {"backoff_ms": 1200}, "repeat": 2}, {"t": 9800, "lane": "tool", "type": "tool.error", "label": "slack_history", "id": "h1", "meta": {"error": "timed out"}}, {"t": 9900, "lane": "run", "type": "run.failed", "label": "aborted after 3 attempts"}];
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtMeta = m => Object.entries(m).map(([k,v]) => `${k}=${typeof v==='string'?v:JSON.stringify(v)}`).join('  ');
+
+function preview(s) {
+  const c = s.colors;
+  const el = document.createElement('div');
+  el.className = 'pv ' + (s.layout || 'timeline');
+  el.style.background = c.bg;
+  el.style.fontFamily = `var(--font-${s.font === 'sans' ? 'sans' : 'mono'})`;
+  el.style.fontSize = ((s.scale ?? 1) * 100).toFixed(0) + '%';
+  for (const e of PREVIEW) {
+    const lane = s.lanes[e.lane] || { color: c.dim, label: e.lane };
+    const spec = s.types[e.type] || {};
+    const color = spec.color || lane.color;
+    const row = document.createElement('div');
+    row.className = 'ev';
+    if ((s.layout || 'timeline') === 'cards') {
+      row.style.borderColor = c.line;
+      row.style.background = c.panel;
+      row.style.borderRadius = ((s.radius ?? 11) - 3) + 'px';
+    }
+    row.innerHTML =
+      `<span class="t" style="color:${c.dim}">${e.t}</span>` +
+      `<span class="lane" style="color:${lane.color}">${esc(lane.label)}</span>` +
+      `<span class="body"><span class="icon" style="color:${color}">${esc(spec.icon || '·')}</span>` +
+      `<span class="type" style="color:${color}">${esc(e.type)}</span>` +
+      (e.label ? `<span class="label" style="color:${c.fg}">${esc(e.label)}</span>` : '') +
+      (e.repeat ? `<span class="rep" style="color:${c.dim};border:1px solid ${c.line}">×${e.repeat}</span>` : '') +
+      (s.showMeta && e.meta ? `<span class="m" style="color:${c.dim}">${esc(fmtMeta(e.meta))}</span>` : '') +
+      `</span>`;
+    el.append(row);
+  }
+  return el;
+}
+
+function card(name, s) {
+  const el = document.createElement('div');
+  el.className = 'card';
+  el.append(preview(s));
+  const meta = document.createElement('div');
+  meta.className = 'meta';
+  meta.innerHTML = `<h2>${esc(s.name)}</h2>` + (s.author ? `<span class="by">by ${esc(s.author)}</span>` : '');
+  el.append(meta);
+  if (s.blurb) {
+    const b = document.createElement('div'); b.className = 'blurb'; b.textContent = s.blurb; el.append(b);
+  }
+  const acts = document.createElement('div');
+  acts.className = 'acts';
+  acts.innerHTML =
+    `<a class="btn primary" href="index.html?skin=${encodeURIComponent(name)}">Use it</a>` +
+    `<a class="btn" href="skins/${encodeURIComponent(name)}.json" download>Download</a>`;
+  el.append(acts);
+  return el;
+}
+
+const grid = document.getElementById('grid');
+for (const [name, s] of Object.entries(SKINS)) grid.append(card(name, s));
+</script></body></html>

@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>agent-tape — watch what your agent is doing</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);transition:background .2s,color .2s;
+ font:14px/1.55 var(--font-sans)}
+:root{--font-sans:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+ --font-mono:ui-monospace,SFMono-Regular,Menlo,monospace}
+.wrap{max-width:60rem;margin:0 auto;padding:1.4rem 1rem 4rem}
+h1{font-size:1.05rem;font-weight:650;margin:0 0 .15rem;letter-spacing:-.01em}
+p.sub{color:var(--dim);font-size:.85rem;margin:0 0 1.1rem;max-width:44rem}
+.bar{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;margin-bottom:.9rem}
+select,button,label.file{font:inherit;font-size:.8rem;padding:.34rem .6rem;border-radius:7px;
+ border:1px solid var(--line);background:var(--panel);color:var(--fg);cursor:pointer}
+button.primary{border-color:var(--accent);color:var(--accent)}
+.bar .sep{flex:1}
+input[type=file]{display:none}
+
+/* now-playing */
+.now{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);
+ padding:.7rem .9rem;margin-bottom:.8rem;display:grid;grid-template-columns:1fr auto;
+ gap:.6rem;align-items:center;min-height:4.1rem}
+.now .what{display:flex;align-items:baseline;gap:.5rem;min-width:0}
+.dot{width:.5rem;height:.5rem;border-radius:50%;background:var(--accent);flex:none;
+ transform:translateY(-.1rem)}
+.dot.on{animation:pulse 1.1s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.now .head{font-size:.95rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.now .detail{font:.75rem/1.5 var(--font-mono);color:var(--dim);white-space:nowrap;
+ overflow:hidden;text-overflow:ellipsis}
+.stats{display:flex;gap:1rem;font:.72rem/1.4 var(--font-mono);color:var(--dim);text-align:right}
+.stats b{display:block;color:var(--fg);font-size:.9rem;font-weight:600;font-variant-numeric:tabular-nums}
+.scrub{width:100%;margin:.15rem 0 .9rem;accent-color:var(--accent)}
+
+/* timeline */
+.tl{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);
+ padding:.45rem .35rem .6rem;min-height:16rem}
+.ev{display:grid;grid-template-columns:3.4rem 3.9rem 1fr;gap:.5rem;align-items:baseline;
+ padding:.14rem .55rem;border-radius:6px;animation:in .22s ease-out}
+@keyframes in{from{opacity:0;transform:translateY(-2px)}to{opacity:1;transform:none}}
+.ev:hover{background:var(--line)}
+.ev.live{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.t{font:.7rem/1.5 var(--font-mono);color:var(--dim);text-align:right;font-variant-numeric:tabular-nums}
+.lane{font:.7rem/1.5 var(--font-mono)}
+.body{display:flex;gap:.4rem;align-items:baseline;min-width:0}
+.icon{width:.95rem;flex:none;text-align:center;font:.78rem/1.5 var(--font-mono)}
+.type{font:.75rem/1.5 var(--font-mono);flex:none}
+.label{font-size:.8rem;flex:none;white-space:nowrap}
+.meta{font:.7rem/1.5 var(--font-mono);color:var(--dim);flex:1 1 0;min-width:0;
+ overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gap{height:1px;background:var(--line);margin:.24rem .8rem;opacity:.55}
+.ev.stuck{background:color-mix(in srgb,var(--warn,#ff7b72) 12%,transparent)}
+.ev.post-abort{opacity:.55}
+.meta.pending{color:var(--warn,#ff7b72)}
+.rep{font:.68rem/1.5 var(--font-mono);color:var(--dim);border:1px solid var(--line);
+ border-radius:999px;padding:0 .32rem;flex:none}
+.now.stuck{border-color:var(--warn,#ff7b72)}
+
+/* cards layout */
+.tl.cards .ev{grid-template-columns:3.4rem 1fr;border:1px solid var(--line);
+ margin:.28rem .4rem;padding:.42rem .6rem;border-radius:calc(var(--radius) - 3px)}
+.tl.cards .lane{display:none}
+.tl.cards.glow .ev.live{box-shadow:0 0 0 1px var(--accent),0 0 18px -6px var(--accent)}
+/* compact layout */
+.tl.compact .ev{padding:.01rem .55rem}
+.tl.compact .gap{display:none}
+
+.drop{border:1px dashed var(--line);border-radius:var(--radius);padding:.65rem;text-align:center;
+ color:var(--dim);font-size:.78rem;margin-top:.9rem}
+.drop.over{border-color:var(--accent);color:var(--accent)}
+.note{font-size:.75rem;color:var(--dim);margin:.8rem 0 0}
+.skinline{font-size:.75rem;color:var(--dim);margin:.35rem 0 0}
+</style></head><body><div class="wrap">
+
+<h1>agent-tape</h1>
+<p class="sub">An agent is doing something right now and the terminal is showing you none of it.
+This plays the run back the way it happened — what it called, how long it waited, where it stopped
+for you — and every part of how that looks comes from a skin file you can swap or write.</p>
+
+<div class="bar">
+  <select id="trace"></select>
+  <select id="skin"></select>
+  <select id="speed">
+    <option value="1">1×</option><option value="2">2×</option>
+    <option value="4">4×</option><option value="0">instant</option>
+  </select>
+  <button id="play" class="primary">Play</button>
+  <button id="restart">Restart</button>
+  <span class="sep"></span>
+  <label class="file">load JSON<input type="file" id="file" accept="application/json"></label>
+</div>
+
+<div class="now" id="now"></div>
+<input type="range" class="scrub" id="scrub" min="0" max="100" value="0" step="1">
+<div class="tl" id="tl"></div>
+<p class="skinline" id="skinline"></p>
+<p class="note" id="note"></p>
+<div class="drop" id="drop">Drop a trace or a skin here. Both are plain JSON — see <code>traces/</code> and <code>skins/</code>.</div>
+</div>
+<script>
+const TRACES = {"coding-agent":{"title":"Coding agent — edit, test, fail, fix","note":"The shape most coding runs take: a test fails once and the agent goes back in.","runs":[{"label":"run","events":[{"t":0,"lane":"user","type":"user.message","label":"Make the retry backoff jittered"},{"t":90,"lane":"model","type":"model.started","meta":{"model":"claude-opus-5"}},{"t":520,"lane":"tool","type":"tool.call","label":"read_file","id":"r1","meta":{"path":"src/retry.ts"}},{"t":660,"lane":"tool","type":"tool.result","label":"read_file","id":"r1","meta":{"lines":88}},{"t":900,"lane":"model","type":"model.started"},{"t":1450,"lane":"tool","type":"tool.call","label":"edit_file","id":"e1","meta":{"path":"src/retry.ts","hunks":1}},{"t":1520,"lane":"tool","type":"tool.result","label":"edit_file","id":"e1","meta":{"applied":true}},{"t":1560,"lane":"tool","type":"tool.call","label":"run_tests","id":"t1","meta":{"cmd":"npm test"}},{"t":6240,"lane":"tool","type":"tool.error","label":"run_tests","id":"t1","meta":{"failed":1,"test":"backoff stays under the cap"}},{"t":6300,"lane":"model","type":"model.started"},{"t":6980,"lane":"model","type":"text.delta","label":"The jitter can exceed the cap. Clamping after."},{"t":7240,"lane":"tool","type":"tool.call","label":"edit_file","id":"e2","meta":{"path":"src/retry.ts","hunks":1}},{"t":7300,"lane":"tool","type":"tool.result","label":"edit_file","id":"e2","meta":{"applied":true}},{"t":7340,"lane":"tool","type":"tool.call","label":"run_tests","id":"t2","meta":{"cmd":"npm test"}},{"t":11890,"lane":"tool","type":"tool.result","label":"run_tests","id":"t2","meta":{"passed":42,"failed":0}},{"t":11950,"lane":"model","type":"model.started"},{"t":12410,"lane":"model","type":"text.delta","label":"Done — jitter is applied before the cap now."},{"t":12480,"lane":"model","type":"model.completed","meta":{"tokens":3104,"finish":"stop"}},{"t":12500,"lane":"run","type":"run.completed","meta":{"ms":12500}}]}]},"multi-agent-handoff":{"title":"Two agents and an approval gate","note":"A handoff, two availability checks in flight at once, and a run that waits on a person.","runs":[{"label":"run","events":[{"t":0,"lane":"user","type":"user.message","label":"Book me a table near the venue on Friday"},{"t":110,"lane":"model","type":"model.started","meta":{"agent":"triage"}},{"t":640,"lane":"run","type":"handoff","label":"triage → places","meta":{"reason":"needs local search"}},{"t":700,"lane":"model","type":"model.started","meta":{"agent":"places"}},{"t":1180,"lane":"tool","type":"tool.call","label":"find_venue","id":"v1","meta":{"near":"Moscone West"}},{"t":2010,"lane":"tool","type":"tool.result","label":"find_venue","id":"v1","meta":{"candidates":4}},{"t":2090,"lane":"tool","type":"tool.call","label":"check_availability","id":"a1","meta":{"when":"Fri 19:30"}},{"t":2100,"lane":"tool","type":"tool.call","label":"check_availability","id":"a2","meta":{"when":"Fri 20:00"}},{"t":2640,"lane":"tool","type":"tool.result","label":"check_availability","id":"a1","meta":{"open":false}},{"t":2910,"lane":"tool","type":"tool.result","label":"check_availability","id":"a2","meta":{"open":true}},{"t":3000,"lane":"run","type":"approval.requested","label":"book Fri 20:00 · Nari","meta":{"tool":"reserve"}},{"t":9400,"lane":"user","type":"approval.granted","label":"approved"},{"t":9460,"lane":"tool","type":"tool.call","label":"reserve","id":"b1"},{"t":10120,"lane":"tool","type":"tool.result","label":"reserve","id":"b1","meta":{"confirmation":"NR-8823"}},{"t":10200,"lane":"model","type":"text.delta","label":"Booked — Nari, Friday 20:00, confirmation NR-8823."},{"t":10280,"lane":"run","type":"run.completed","meta":{"ms":10280}}]}]},"research-assistant":{"title":"Research assistant — search, read two pages, summarise","note":"An ordinary run: one search, two fetches in parallel, then the answer streams in.","runs":[{"label":"run","events":[{"t":0,"lane":"user","type":"user.message","label":"What changed in the EU AI Act this quarter?"},{"t":120,"lane":"model","type":"model.started","meta":{"model":"gpt-5"}},{"t":410,"lane":"model","type":"text.delta","label":"Let me look that up."},{"t":690,"lane":"tool","type":"tool.call","label":"web_search","id":"s1","meta":{"query":"EU AI Act amendments Q3"}},{"t":1840,"lane":"tool","type":"tool.result","label":"web_search","id":"s1","meta":{"hits":7,"ms":1150}},{"t":1900,"lane":"tool","type":"tool.call","label":"fetch_page","id":"f1","meta":{"url":"eur-lex.europa.eu/…"}},{"t":1910,"lane":"tool","type":"tool.call","label":"fetch_page","id":"f2","meta":{"url":"digital-strategy.ec…"}},{"t":2530,"lane":"tool","type":"tool.result","label":"fetch_page","id":"f2","meta":{"bytes":48211}},{"t":3120,"lane":"tool","type":"tool.result","label":"fetch_page","id":"f1","meta":{"bytes":112904}},{"t":3200,"lane":"model","type":"model.started","meta":{"model":"gpt-5"}},{"t":3480,"lane":"model","type":"text.delta","label":"Three"},{"t":3538,"lane":"model","type":"text.delta","label":"things"},{"t":3596,"lane":"model","type":"text.delta","label":"changed."},{"t":3654,"lane":"model","type":"text.delta","label":"First,"},{"t":3712,"lane":"model","type":"text.delta","label":"the"},{"t":3770,"lane":"model","type":"text.delta","label":"general-purpose"},{"t":3828,"lane":"model","type":"text.delta","label":"model"},{"t":3886,"lane":"model","type":"text.delta","label":"obligations"},{"t":3944,"lane":"model","type":"text.delta","label":"moved"},{"t":4002,"lane":"model","type":"text.delta","label":"up"},{"t":4060,"lane":"model","type":"text.delta","label":"by"},{"t":4118,"lane":"model","type":"text.delta","label":"six"},{"t":4176,"lane":"model","type":"text.delta","label":"months."},{"t":4234,"lane":"model","type":"text.delta","label":"Second,"},{"t":4292,"lane":"model","type":"text.delta","label":"the"},{"t":4350,"lane":"model","type":"text.delta","label":"transparency"},{"t":4408,"lane":"model","type":"text.delta","label":"annex"},{"t":4466,"lane":"model","type":"text.delta","label":"now"},{"t":4524,"lane":"model","type":"text.delta","label":"names"},{"t":4582,"lane":"model","type":"text.delta","label":"synthetic"},{"t":4640,"lane":"model","type":"text.delta","label":"media"},{"t":4698,"lane":"model","type":"text.delta","label":"explicitly."},{"t":4756,"lane":"model","type":"text.delta","label":"Third,"},{"t":4814,"lane":"model","type":"text.delta","label":"the"},{"t":4872,"lane":"model","type":"text.delta","label":"sandbox"},{"t":4930,"lane":"model","type":"text.delta","label":"provisions"},{"t":5028,"lane":"model","type":"model.completed","meta":{"tokens":1842,"finish":"stop"}},{"t":5048,"lane":"run","type":"run.completed","meta":{"ms":5048}}]}]},"stuck-run":{"title":"A run that stops without saying so","note":"The tool call at 1.2s never comes back, the transport keeps reconnecting, and the abort at 32s does not stop it. Nothing here is an error message — which is exactly why this is hard to see in a terminal.","runs":[{"label":"run","events":[{"t":0,"lane":"user","type":"user.message","label":"Summarise the incident channel"},{"t":140,"lane":"model","type":"model.started","meta":{"model":"local/llama"}},{"t":980,"lane":"model","type":"text.delta","label":"Pulling the channel history."},{"t":1240,"lane":"tool","type":"tool.call","label":"slack_history","id":"h1","meta":{"channel":"#inc-441"}},{"t":4200,"lane":"conn","type":"conn.lost","label":"upstream closed"},{"t":4600,"lane":"conn","type":"conn.retry","label":"attempt 1","meta":{"backoff_ms":400}},{"t":6200,"lane":"conn","type":"conn.retry","label":"attempt 2","meta":{"backoff_ms":1200}},{"t":9400,"lane":"conn","type":"conn.retry","label":"attempt 3","meta":{"backoff_ms":3000}},{"t":15800,"lane":"conn","type":"conn.retry","label":"attempt 4","meta":{"backoff_ms":6000}},{"t":28600,"lane":"conn","type":"conn.retry","label":"attempt 5","meta":{"backoff_ms":12000}},{"t":32000,"lane":"user","type":"abort.requested","label":"ctrl-c"},{"t":34100,"lane":"conn","type":"conn.retry","label":"attempt 6","meta":{"backoff_ms":24000,"after_abort":true}},{"t":58000,"lane":"conn","type":"conn.retry","label":"attempt 7","meta":{"backoff_ms":48000,"after_abort":true}}]}]}};
+const SKINS  = {"blueprint":{"name":"blueprint","author":"cmun2","blurb":"Drafting-table blue. Thin, technical, everything labelled.","colors":{"bg":"#0b1f3a","panel":"#0f2a4d","line":"#1d456f","fg":"#cfe3ff","dim":"#6f96c4","accent":"#5ad2f4"},"lanes":{"user":{"color":"#ffffff","label":"USR"},"model":{"color":"#5ad2f4","label":"MDL"},"tool":{"color":"#8ff0c0","label":"TL "},"conn":{"color":"#6f96c4","label":"NET"},"run":{"color":"#cfe3ff","label":"RUN"}},"types":{"tool.call":{"icon":"┌"},"tool.result":{"icon":"└"},"tool.error":{"color":"#ff9d9d","icon":"╳"},"text.delta":{"icon":"│"},"model.started":{"icon":"╭"},"model.completed":{"icon":"╰"},"handoff":{"color":"#ffd98e","icon":"╫"},"approval.requested":{"color":"#ffd98e","icon":"◇"},"approval.granted":{"color":"#8ff0c0","icon":"◆"},"abort.requested":{"color":"#ff9d9d","icon":"▣"},"conn.lost":{"color":"#ff9d9d","icon":"╱"},"conn.retry":{"color":"#ffd98e","icon":"↺"},"run.completed":{"color":"#8ff0c0","icon":"═"},"run.failed":{"color":"#ff9d9d","icon":"═"}},"layout":"timeline","font":"mono","radius":2,"scale":0.92,"showMeta":true,"mergeDeltas":true,"glow":false,"stuckAfterMs":5000},"contrast":{"name":"contrast","author":"cmun2","blurb":"Maximum contrast, large type, no colour carrying meaning on its own.","colors":{"bg":"#ffffff","panel":"#ffffff","line":"#000000","fg":"#000000","dim":"#3d3d3d","accent":"#0000cc"},"lanes":{"user":{"color":"#000000","label":"YOU"},"model":{"color":"#0000cc","label":"MODEL"},"tool":{"color":"#006600","label":"TOOL"},"conn":{"color":"#3d3d3d","label":"NET"},"run":{"color":"#000000","label":"RUN"}},"types":{"tool.call":{"icon":"[>]"},"tool.result":{"icon":"[<]"},"tool.error":{"color":"#cc0000","icon":"[!]"},"text.delta":{"icon":"[.]"},"model.started":{"icon":"[(]"},"model.completed":{"icon":"[)]"},"handoff":{"icon":"[=]"},"approval.requested":{"color":"#cc0000","icon":"[?]"},"approval.granted":{"color":"#006600","icon":"[y]"},"abort.requested":{"color":"#cc0000","icon":"[X]"},"conn.lost":{"color":"#cc0000","icon":"[/]"},"conn.retry":{"color":"#cc0000","icon":"[r]"},"run.completed":{"color":"#006600","icon":"[=]"},"run.failed":{"color":"#cc0000","icon":"[X]"}},"layout":"timeline","font":"sans","radius":4,"scale":1.3,"showMeta":true,"mergeDeltas":true,"glow":false,"stuckAfterMs":4000},"midnight":{"name":"midnight","author":"cmun2","blurb":"Quiet dark. The default.","colors":{"bg":"#0d1117","panel":"#161b22","line":"#21262d","fg":"#e6edf3","dim":"#8b949e","accent":"#58a6ff"},"lanes":{"user":{"color":"#a5d6ff","label":"you"},"model":{"color":"#d2a8ff","label":"model"},"tool":{"color":"#7ee787","label":"tool"},"run":{"color":"#8b949e","label":"run"},"conn":{"color":"#8b949e","label":"conn"}},"types":{"tool.error":{"color":"#ff7b72","icon":"!"},"run.failed":{"color":"#ff7b72","icon":"x"},"run.completed":{"color":"#7ee787","icon":"="},"handoff":{"color":"#ffa657","icon":">"},"approval.requested":{"color":"#ffa657","icon":"?"},"approval.granted":{"color":"#7ee787","icon":"+"},"tool.call":{"icon":"*"},"tool.result":{"icon":"+"},"text.delta":{"icon":"~"},"model.started":{"icon":"."},"model.completed":{"icon":"."},"conn.lost":{"color":"#ff7b72","icon":"/"},"conn.retry":{"color":"#ff7b72","icon":"^"},"abort.requested":{"color":"#ff7b72","icon":"#"}},"layout":"timeline","font":"mono","radius":11,"showMeta":true,"mergeDeltas":true,"glow":false,"stuckAfterMs":5000},"mono":{"name":"mono","author":"cmun2","blurb":"One colour. Everything else is grey. Errors are the only thing that shouts.","colors":{"bg":"#111111","panel":"#171717","line":"#262626","fg":"#ededed","dim":"#6e6e6e","accent":"#ededed"},"lanes":{"user":{"color":"#ededed","label":"you"},"model":{"color":"#9a9a9a","label":"model"},"tool":{"color":"#9a9a9a","label":"tool"},"conn":{"color":"#6e6e6e","label":"conn"},"run":{"color":"#6e6e6e","label":"run"}},"types":{"tool.call":{"icon":"·"},"tool.result":{"icon":"·"},"tool.error":{"color":"#ff4d4d","icon":"●"},"text.delta":{"icon":" "},"model.started":{"icon":" "},"model.completed":{"icon":" "},"handoff":{"icon":"·"},"approval.requested":{"color":"#ffffff","icon":"●"},"approval.granted":{"icon":"·"},"abort.requested":{"color":"#ff4d4d","icon":"●"},"conn.lost":{"color":"#ff4d4d","icon":"●"},"conn.retry":{"icon":"·"},"run.completed":{"icon":"·"},"run.failed":{"color":"#ff4d4d","icon":"●"}},"layout":"timeline","font":"sans","radius":6,"scale":0.95,"showMeta":false,"mergeDeltas":true,"glow":false,"stuckAfterMs":6000},"neon":{"name":"neon","author":"cmun2","blurb":"Loud. Glows. Good on a second monitor.","colors":{"bg":"#07070f","panel":"#0f0f1c","line":"#242440","fg":"#e9e9ff","dim":"#7676a8","accent":"#22d3ee"},"lanes":{"user":{"color":"#22d3ee","label":"YOU"},"model":{"color":"#a78bfa","label":"MODEL"},"tool":{"color":"#34d399","label":"TOOL"},"run":{"color":"#7676a8","label":"RUN"},"conn":{"color":"#7676a8","label":"CONN"}},"types":{"tool.error":{"color":"#fb7185","icon":"▲"},"run.failed":{"color":"#fb7185","icon":"■"},"run.completed":{"color":"#34d399","icon":"●"},"handoff":{"color":"#fbbf24","icon":"▶"},"approval.requested":{"color":"#fbbf24","icon":"◈"},"approval.granted":{"color":"#34d399","icon":"◉"},"tool.call":{"icon":"◆"},"tool.result":{"icon":"◇"},"text.delta":{"icon":"·"},"model.started":{"icon":"○"},"model.completed":{"icon":"○"},"conn.lost":{"color":"#fb7185","icon":"/"},"conn.retry":{"color":"#fb7185","icon":"^"},"abort.requested":{"color":"#fb7185","icon":"#"}},"layout":"cards","font":"mono","radius":14,"showMeta":true,"mergeDeltas":true,"glow":true,"stuckAfterMs":5000},"paper":{"name":"paper","author":"cmun2","blurb":"Light, printable, no ornament.","colors":{"bg":"#fbfbf8","panel":"#ffffff","line":"#e4e1d9","fg":"#1a1a17","dim":"#6b6862","accent":"#0969da"},"lanes":{"user":{"color":"#0969da","label":"you"},"model":{"color":"#8250df","label":"model"},"tool":{"color":"#1a7f37","label":"tool"},"run":{"color":"#6b6862","label":"run"},"conn":{"color":"#6b6862","label":"conn"}},"types":{"tool.error":{"color":"#cf222e","icon":"!"},"run.failed":{"color":"#cf222e","icon":"x"},"run.completed":{"color":"#1a7f37","icon":"="},"handoff":{"color":"#bc4c00","icon":">"},"approval.requested":{"color":"#bc4c00","icon":"?"},"approval.granted":{"color":"#1a7f37","icon":"+"},"tool.call":{"icon":"*"},"tool.result":{"icon":"+"},"text.delta":{"icon":"~"},"model.started":{"icon":"."},"model.completed":{"icon":"."},"conn.lost":{"color":"#cf222e","icon":"/"},"conn.retry":{"color":"#cf222e","icon":"^"},"abort.requested":{"color":"#cf222e","icon":"#"}},"layout":"compact","font":"sans","radius":8,"showMeta":false,"mergeDeltas":true,"glow":false,"stuckAfterMs":5000},"projector":{"name":"projector","author":"cmun2","blurb":"For the back of the room. Big, few rows, no metadata.","colors":{"bg":"#101418","panel":"#171d24","line":"#2a333d","fg":"#f5f8fa","dim":"#8fa0b0","accent":"#ffd166"},"lanes":{"user":{"color":"#8ecae6","label":"you"},"model":{"color":"#c8b6ff","label":"model"},"tool":{"color":"#95d5b2","label":"tool"},"conn":{"color":"#8fa0b0","label":"net"},"run":{"color":"#ffd166","label":"run"}},"types":{"tool.call":{"icon":"▶"},"tool.result":{"icon":"✓"},"tool.error":{"color":"#ff8fa3","icon":"✕"},"text.delta":{"icon":"…"},"model.started":{"icon":"◐"},"model.completed":{"icon":"◑"},"handoff":{"color":"#ffd166","icon":"⇢"},"approval.requested":{"color":"#ffd166","icon":"✋"},"approval.granted":{"color":"#95d5b2","icon":"✓"},"abort.requested":{"color":"#ff8fa3","icon":"⏹"},"conn.lost":{"color":"#ff8fa3","icon":"⚡"},"conn.retry":{"color":"#ffd166","icon":"↻"},"run.completed":{"color":"#95d5b2","icon":"✓"},"run.failed":{"color":"#ff8fa3","icon":"✕"}},"layout":"cards","font":"sans","radius":16,"scale":1.35,"showMeta":false,"mergeDeltas":true,"glow":false,"stuckAfterMs":3000},"terminal":{"name":"terminal","author":"cmun2","blurb":"Reads like the log you wish it had printed.","colors":{"bg":"#000000","panel":"#000000","line":"#1c1c1c","fg":"#c8c8c8","dim":"#5a5a5a","accent":"#00c853"},"lanes":{"user":{"color":"#c8c8c8","label":"$"},"model":{"color":"#7aa6ff","label":"llm"},"tool":{"color":"#00c853","label":"exec"},"conn":{"color":"#5a5a5a","label":"net"},"run":{"color":"#5a5a5a","label":"---"}},"types":{"tool.call":{"icon":"+"},"tool.result":{"icon":"-"},"tool.error":{"color":"#ff5252","icon":"E"},"text.delta":{"icon":"|"},"model.started":{"icon":">"},"model.completed":{"icon":"<"},"handoff":{"color":"#ffab40","icon":"@"},"approval.requested":{"color":"#ffab40","icon":"?"},"approval.granted":{"color":"#00c853","icon":"y"},"abort.requested":{"color":"#ff5252","icon":"^C"},"conn.lost":{"color":"#ff5252","icon":"x"},"conn.retry":{"color":"#ffab40","icon":"r"},"run.completed":{"color":"#00c853","icon":"ok"},"run.failed":{"color":"#ff5252","icon":"!!"}},"layout":"compact","font":"mono","radius":0,"scale":0.95,"showMeta":true,"mergeDeltas":true,"glow":false,"stuckAfterMs":4000},"transit":{"name":"transit","author":"cmun2","blurb":"Lanes as lines. Each actor gets its own colour and stays there.","colors":{"bg":"#f4f1ea","panel":"#ffffff","line":"#d9d2c4","fg":"#161616","dim":"#736b5e","accent":"#e4002b"},"lanes":{"user":{"color":"#0072ce","label":"━ you"},"model":{"color":"#9b26b6","label":"━ model"},"tool":{"color":"#00843d","label":"━ tool"},"conn":{"color":"#ed8b00","label":"━ net"},"run":{"color":"#e4002b","label":"━ run"}},"types":{"tool.call":{"icon":"▸"},"tool.result":{"icon":"◂"},"tool.error":{"color":"#e4002b","icon":"✕"},"text.delta":{"icon":"—"},"model.started":{"icon":"○"},"model.completed":{"icon":"◍"},"handoff":{"color":"#ed8b00","icon":"⇄"},"approval.requested":{"color":"#ed8b00","icon":"◔"},"approval.granted":{"color":"#00843d","icon":"◉"},"abort.requested":{"color":"#e4002b","icon":"■"},"conn.lost":{"color":"#e4002b","icon":"⌁"},"conn.retry":{"color":"#ed8b00","icon":"↻"},"run.completed":{"color":"#00843d","icon":"⬤"},"run.failed":{"color":"#e4002b","icon":"⬤"}},"layout":"timeline","font":"sans","radius":18,"scale":1.05,"showMeta":false,"mergeDeltas":true,"glow":false,"stuckAfterMs":5000}};
+
+const $ = id => document.getElementById(id);
+const params = new URLSearchParams(location.search);
+const wantSkin = params.get('skin'), wantTrace = params.get('trace');
+let state = { trace: (wantTrace && TRACES[wantTrace]) ? wantTrace : Object.keys(TRACES)[0],
+              skin: (wantSkin && SKINS[wantSkin]) ? wantSkin : Object.keys(SKINS)[0],
+              custom: null, customSkin: null, t: 0, playing: false, raf: 0, last: 0 };
+
+const skin  = () => state.customSkin ?? SKINS[state.skin];
+const trace = () => state.custom ?? TRACES[state.trace];
+const events = () => trace().runs[0].events;
+const duration = () => { const e = events(); return e.length ? e[e.length - 1].t : 0; };
+
+function applySkin() {
+  const s = skin(), c = s.colors, r = document.documentElement.style;
+  for (const [k, v] of Object.entries(c)) r.setProperty('--' + k, v);
+  r.setProperty('--radius', (s.radius ?? 11) + 'px');
+  r.setProperty('--warn', (s.types['tool.error'] || {}).color || c.dim);
+  const scale = s.scale ?? 1;
+  r.setProperty('--scale', String(scale));
+  document.body.style.font = `${(14 * scale).toFixed(2)}px/1.55 var(--font-${s.font === 'sans' ? 'sans' : 'mono'})`;
+  $('tl').className = 'tl ' + (s.layout || 'timeline') + (s.glow ? ' glow' : '');
+  $('skinline').textContent = s.blurb ? `${s.name} — ${s.blurb}${s.author ? '  ·  by ' + s.author : ''}` : '';
+}
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtMeta = m => Object.entries(m).map(([k, v]) => `${k}=${typeof v === 'string' ? v : JSON.stringify(v)}`).join('  ');
+
+/** Text deltas are noise one per row; a skin can ask for them merged into one growing line. */
+function visible(upTo) {
+  const s = skin(), out = [];
+  for (const e of events()) {
+    if (e.t > upTo) break;
+    if (e.type === 'conn.retry') {
+      const prev = out[out.length - 1];
+      if (prev && prev.type === 'conn.retry') {
+        prev.repeat = (prev.repeat || 1) + 1; prev.label = e.label; prev.meta = e.meta;
+        continue;
+      }
+      out.push({ ...e, repeat: 1 });
+      continue;
+    }
+    if (s.mergeDeltas && e.type === 'text.delta') {
+      const prev = out[out.length - 1];
+      if (prev && prev.type === 'text.delta') {
+        prev.label += (prev.label.endsWith(' ') ? '' : ' ') + e.label;
+        prev.merged = (prev.merged || 1) + 1;
+        continue;
+      }
+      out.push({ ...e });
+      continue;
+    }
+    out.push(e);
+  }
+  return out;
+}
+
+/** Calls with no result yet at `t`, oldest first. A run that is stuck is a run where one of
+ *  these stops moving, which no error message ever announces. */
+function openCalls(t) {
+  const open = new Map();
+  for (const e of events()) {
+    if (e.t > t) break;
+    if (e.type === 'tool.call') open.set(e.id ?? e.label, e);
+    else if (e.type === 'tool.result' || e.type === 'tool.error') open.delete(e.id ?? e.label);
+  }
+  return [...open.values()].sort((a, b) => a.t - b.t);
+}
+
+/** Time from the run's first event to the first token the model produced. */
+function ttft(t) {
+  const first = events().find(e => e.type === 'text.delta' && e.t <= t);
+  return first ? first.t : null;
+}
+
+/** The moment an abort was asked for, if it was. Anything after it is worth flagging. */
+function abortAt() {
+  const a = events().find(e => e.type === 'abort.requested');
+  return a ? a.t : null;
+}
+
+/** What the run is doing at `t`: the newest call with no matching result yet, else the last event. */
+function nowState(t) {
+  const seen = events().filter(e => e.t <= t);
+  if (!seen.length) return { head: 'ready', detail: 'press play', live: false };
+  const running = openCalls(t);
+  const stuckMs = skin().stuckAfterMs ?? 5000;
+  const stuck = running.filter(e => t - e.t > stuckMs);
+  const last = seen[seen.length - 1];
+  if (stuck.length) {
+    const worst = stuck[0];
+    return {
+      head: `${worst.label} has not answered`,
+      detail: `waiting ${((t - worst.t) / 1000).toFixed(1)}s` +
+        (stuck.length > 1 ? `, and ${stuck.length - 1} more` : '') +
+        (abortAt() !== null && t > abortAt() ? '  ·  abort was requested and did not stop it' : ''),
+      live: true, stuck: true,
+    };
+  }
+  if (last.type === 'approval.requested')
+    return { head: 'waiting on you', detail: last.label ?? '', live: true, wait: true };
+  if (running.length) {
+    const first = running[0];
+    return {
+      head: running.length > 1 ? `${running.length} tools running` : `running ${first.label}`,
+      detail: running.map(e => `${e.label} · ${t - e.t}ms`).join('   '),
+      live: true,
+    };
+  }
+  if (last.type === 'run.completed') return { head: 'done', detail: `${last.t} ms`, live: false };
+  if (last.type === 'run.failed') return { head: 'failed', detail: last.label ?? '', live: false };
+  if (last.type === 'text.delta' || last.type === 'model.started')
+    return { head: 'model is writing', detail: last.label ?? '', live: true };
+  return { head: last.type, detail: last.label ?? '', live: true };
+}
+
+function stats(t) {
+  const seen = events().filter(e => e.t <= t);
+  const calls = seen.filter(e => e.type === 'tool.call').length;
+  const errs = seen.filter(e => e.type === 'tool.error' || e.type === 'run.failed').length;
+  const tok = seen.reduce((n, e) => Math.max(n, e.meta?.tokens ?? 0), 0);
+  const retries = seen.filter(e => e.type === 'conn.retry').length;
+  return { elapsed: Math.round(t), calls, errs, tok, retries, ttft: ttft(t) };
+}
+
+function render() {
+  applySkin();
+  const s = skin(), t = state.t;
+  const n = nowState(t), st = stats(t);
+  $('now').className = 'now' + (n.stuck ? ' stuck' : '');
+  $('now').innerHTML =
+    `<div class="what"><span class="dot ${n.live ? 'on' : ''}"></span>` +
+    `<div style="min-width:0"><div class="head">${esc(n.head)}</div>` +
+    `<div class="detail">${esc(n.detail)}</div></div></div>` +
+    `<div class="stats">` +
+      `<span>elapsed<b>${(st.elapsed / 1000).toFixed(1)}s</b></span>` +
+      (st.ttft !== null ? `<span>first token<b>${st.ttft}ms</b></span>` : '') +
+      `<span>tools<b>${st.calls}</b></span>` +
+      (st.retries ? `<span>retries<b>${st.retries}</b></span>` : '') +
+      (st.errs ? `<span>errors<b>${st.errs}</b></span>` : '') +
+      (st.tok ? `<span>tokens<b>${st.tok}</b></span>` : '') +
+    `</div>`;
+
+  const tl = $('tl');
+  tl.innerHTML = '';
+  const rows = visible(t);
+  const openIds = new Set(openCalls(t).map(e => e.id ?? e.label));
+  const ab = abortAt();
+  let prev = null;
+  rows.forEach((e, i) => {
+    if (prev !== null && e.t - prev > 900) { const g = document.createElement('div'); g.className = 'gap'; tl.append(g); }
+    prev = e.t;
+    const lane = s.lanes[e.lane] || { color: s.colors.dim, label: e.lane };
+    const spec = s.types[e.type] || {};
+    const color = spec.color || lane.color;
+    const isLast = i === rows.length - 1;
+    const stillOpen = e.type === 'tool.call' && openIds.has(e.id ?? e.label);
+    const afterAbort = ab !== null && e.t > ab;
+    const row = document.createElement('div');
+    row.className = 'ev' + (isLast && n.live ? ' live' : '')
+      + (stillOpen && t - e.t > (s.stuckAfterMs ?? 5000) ? ' stuck' : '')
+      + (afterAbort ? ' post-abort' : '');
+    row.innerHTML =
+      `<span class="t">${e.t}</span>` +
+      `<span class="lane" style="color:${lane.color}">${esc(lane.label)}</span>` +
+      `<span class="body"><span class="icon" style="color:${color}">${esc(spec.icon || '·')}</span>` +
+      `<span class="type" style="color:${color}">${esc(e.type)}</span>` +
+      (e.label ? `<span class="label">${esc(e.label)}${e.merged ? '' : ''}</span>` : '') +
+      (e.repeat ? `<span class="rep">×${e.repeat}</span>` : '') +
+      (stillOpen ? `<span class="meta pending">no answer yet · ${((t - e.t) / 1000).toFixed(1)}s</span>`
+        : s.showMeta && e.meta ? `<span class="meta">${esc(fmtMeta(e.meta))}</span>` : '') +
+      `</span>`;
+    tl.append(row);
+  });
+  tl.scrollTop = tl.scrollHeight;
+  $('scrub').max = String(duration());
+  $('scrub').value = String(t);
+  $('note').textContent = trace().note || '';
+  $('play').textContent = state.playing ? 'Pause' : 'Play';
+}
+
+function tick(ts) {
+  if (!state.playing) return;
+  const dt = state.last ? ts - state.last : 0;
+  state.last = ts;
+  const rate = Number($('speed').value);
+  state.t = rate === 0 ? duration() : Math.min(duration(), state.t + dt * rate);
+  render();
+  if (state.t >= duration()) { state.playing = false; render(); return; }
+  state.raf = requestAnimationFrame(tick);
+}
+
+function play() {
+  if (state.t >= duration()) state.t = 0;
+  state.playing = true; state.last = 0;
+  state.raf = requestAnimationFrame(tick);
+  render();
+}
+function pause() { state.playing = false; cancelAnimationFrame(state.raf); render(); }
+
+function loadFile(file) {
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const p = JSON.parse(String(r.result));
+      if (p.colors && p.lanes) { state.customSkin = p; }
+      else {
+        state.custom = Array.isArray(p) ? { title: file.name, runs: [{ label: 'run', events: p }] } : p;
+        state.t = 0;
+      }
+      render();
+    } catch (err) { $('drop').textContent = 'Could not parse that: ' + err.message; }
+  };
+  r.readAsText(file);
+}
+
+function boot() {
+  for (const k of Object.keys(TRACES)) {
+    const o = document.createElement('option'); o.value = k; o.textContent = TRACES[k].title || k; $('trace').append(o);
+  }
+  for (const k of Object.keys(SKINS)) {
+    const o = document.createElement('option'); o.value = k; o.textContent = k; $('skin').append(o);
+  }
+  $('trace').value = state.trace; $('skin').value = state.skin;
+  $('trace').onchange = () => { state.trace = $('trace').value; state.custom = null; state.t = 0; pause(); render(); };
+  $('skin').onchange = () => { state.skin = $('skin').value; state.customSkin = null; render(); };
+  $('play').onclick = () => (state.playing ? pause() : play());
+  $('restart').onclick = () => { state.t = 0; play(); };
+  $('scrub').oninput = () => { const v = Number($('scrub').value); pause(); state.t = v; render(); };
+  $('file').onchange = e => { if (e.target.files[0]) loadFile(e.target.files[0]); };
+  const drop = $('drop');
+  drop.ondragover = e => { e.preventDefault(); drop.classList.add('over'); };
+  drop.ondragleave = () => drop.classList.remove('over');
+  drop.ondrop = e => { e.preventDefault(); drop.classList.remove('over'); if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); };
+  render();
+}
+boot();
+</script></body></html>

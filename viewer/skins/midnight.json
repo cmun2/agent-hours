@@ -1,0 +1,95 @@
+{
+  "name": "midnight",
+  "author": "cmun2",
+  "blurb": "Quiet dark. The default.",
+  "colors": {
+    "bg": "#0d1117",
+    "panel": "#161b22",
+    "line": "#21262d",
+    "fg": "#e6edf3",
+    "dim": "#8b949e",
+    "accent": "#58a6ff"
+  },
+  "lanes": {
+    "user": {
+      "color": "#a5d6ff",
+      "label": "you"
+    },
+    "model": {
+      "color": "#d2a8ff",
+      "label": "model"
+    },
+    "tool": {
+      "color": "#7ee787",
+      "label": "tool"
+    },
+    "run": {
+      "color": "#8b949e",
+      "label": "run"
+    },
+    "conn": {
+      "color": "#8b949e",
+      "label": "conn"
+    }
+  },
+  "types": {
+    "tool.error": {
+      "color": "#ff7b72",
+      "icon": "!"
+    },
+    "run.failed": {
+      "color": "#ff7b72",
+      "icon": "x"
+    },
+    "run.completed": {
+      "color": "#7ee787",
+      "icon": "="
+    },
+    "handoff": {
+      "color": "#ffa657",
+      "icon": ">"
+    },
+    "approval.requested": {
+      "color": "#ffa657",
+      "icon": "?"
+    },
+    "approval.granted": {
+      "color": "#7ee787",
+      "icon": "+"
+    },
+    "tool.call": {
+      "icon": "*"
+    },
+    "tool.result": {
+      "icon": "+"
+    },
+    "text.delta": {
+      "icon": "~"
+    },
+    "model.started": {
+      "icon": "."
+    },
+    "model.completed": {
+      "icon": "."
+    },
+    "conn.lost": {
+      "color": "#ff7b72",
+      "icon": "/"
+    },
+    "conn.retry": {
+      "color": "#ff7b72",
+      "icon": "^"
+    },
+    "abort.requested": {
+      "color": "#ff7b72",
+      "icon": "#"
+    }
+  },
+  "layout": "timeline",
+  "font": "mono",
+  "radius": 11,
+  "showMeta": true,
+  "mergeDeltas": true,
+  "glow": false,
+  "stuckAfterMs": 5000
+}

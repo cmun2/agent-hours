@@ -1,0 +1,173 @@
+{
+ "title": "Coding agent \u2014 edit, test, fail, fix",
+ "note": "The shape most coding runs take: a test fails once and the agent goes back in.",
+ "runs": [
+  {
+   "label": "run",
+   "events": [
+    {
+     "t": 0,
+     "lane": "user",
+     "type": "user.message",
+     "label": "Make the retry backoff jittered"
+    },
+    {
+     "t": 90,
+     "lane": "model",
+     "type": "model.started",
+     "meta": {
+      "model": "claude-opus-5"
+     }
+    },
+    {
+     "t": 520,
+     "lane": "tool",
+     "type": "tool.call",
+     "label": "read_file",
+     "id": "r1",
+     "meta": {
+      "path": "src/retry.ts"
+     }
+    },
+    {
+     "t": 660,
+     "lane": "tool",
+     "type": "tool.result",
+     "label": "read_file",
+     "id": "r1",
+     "meta": {
+      "lines": 88
+     }
+    },
+    {
+     "t": 900,
+     "lane": "model",
+     "type": "model.started"
+    },
+    {
+     "t": 1450,
+     "lane": "tool",
+     "type": "tool.call",
+     "label": "edit_file",
+     "id": "e1",
+     "meta": {
+      "path": "src/retry.ts",
+      "hunks": 1
+     }
+    },
+    {
+     "t": 1520,
+     "lane": "tool",
+     "type": "tool.result",
+     "label": "edit_file",
+     "id": "e1",
+     "meta": {
+      "applied": true
+     }
+    },
+    {
+     "t": 1560,
+     "lane": "tool",
+     "type": "tool.call",
+     "label": "run_tests",
+     "id": "t1",
+     "meta": {
+      "cmd": "npm test"
+     }
+    },
+    {
+     "t": 6240,
+     "lane": "tool",
+     "type": "tool.error",
+     "label": "run_tests",
+     "id": "t1",
+     "meta": {
+      "failed": 1,
+      "test": "backoff stays under the cap"
+     }
+    },
+    {
+     "t": 6300,
+     "lane": "model",
+     "type": "model.started"
+    },
+    {
+     "t": 6980,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "The jitter can exceed the cap. Clamping after."
+    },
+    {
+     "t": 7240,
+     "lane": "tool",
+     "type": "tool.call",
+     "label": "edit_file",
+     "id": "e2",
+     "meta": {
+      "path": "src/retry.ts",
+      "hunks": 1
+     }
+    },
+    {
+     "t": 7300,
+     "lane": "tool",
+     "type": "tool.result",
+     "label": "edit_file",
+     "id": "e2",
+     "meta": {
+      "applied": true
+     }
+    },
+    {
+     "t": 7340,
+     "lane": "tool",
+     "type": "tool.call",
+     "label": "run_tests",
+     "id": "t2",
+     "meta": {
+      "cmd": "npm test"
+     }
+    },
+    {
+     "t": 11890,
+     "lane": "tool",
+     "type": "tool.result",
+     "label": "run_tests",
+     "id": "t2",
+     "meta": {
+      "passed": 42,
+      "failed": 0
+     }
+    },
+    {
+     "t": 11950,
+     "lane": "model",
+     "type": "model.started"
+    },
+    {
+     "t": 12410,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "Done \u2014 jitter is applied before the cap now."
+    },
+    {
+     "t": 12480,
+     "lane": "model",
+     "type": "model.completed",
+     "meta": {
+      "tokens": 3104,
+      "finish": "stop"
+     }
+    },
+    {
+     "t": 12500,
+     "lane": "run",
+     "type": "run.completed",
+     "meta": {
+      "ms": 12500
+     }
+    }
+   ]
+  }
+ ]
+}

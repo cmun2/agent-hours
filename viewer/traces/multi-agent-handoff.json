@@ -1,0 +1,148 @@
+{
+ "title": "Two agents and an approval gate",
+ "note": "A handoff, two availability checks in flight at once, and a run that waits on a person.",
+ "runs": [
+  {
+   "label": "run",
+   "events": [
+    {
+     "t": 0,
+     "lane": "user",
+     "type": "user.message",
+     "label": "Book me a table near the venue on Friday"
+    },
+    {
+     "t": 110,
+     "lane": "model",
+     "type": "model.started",
+     "meta": {
+      "agent": "triage"
+     }
+    },
+    {
+     "t": 640,
+     "lane": "run",
+     "type": "handoff",
+     "label": "triage \u2192 places",
+     "meta": {
+      "reason": "needs local search"
+     }
+    },
+    {
+     "t": 700,
+     "lane": "model",
+     "type": "model.started",
+     "meta": {
+      "agent": "places"
+     }
+    },
+    {
+     "t": 1180,
+     "lane": "tool",
+     "type": "tool.call",
+     "label": "find_venue",
+     "id": "v1",
+     "meta": {
+      "near": "Moscone West"
+     }
+    },
+    {
+     "t": 2010,
+     "lane": "tool",
+     "type": "tool.result",
+     "label": "find_venue",
+     "id": "v1",
+     "meta": {
+      "candidates": 4
+     }
+    },
+    {
+     "t": 2090,
+     "lane": "tool",
+     "type": "tool.call",
+     "label": "check_availability",
+     "id": "a1",
+     "meta": {
+      "when": "Fri 19:30"
+     }
+    },
+    {
+     "t": 2100,
+     "lane": "tool",
+     "type": "tool.call",
+     "label": "check_availability",
+     "id": "a2",
+     "meta": {
+      "when": "Fri 20:00"
+     }
+    },
+    {
+     "t": 2640,
+     "lane": "tool",
+     "type": "tool.result",
+     "label": "check_availability",
+     "id": "a1",
+     "meta": {
+      "open": false
+     }
+    },
+    {
+     "t": 2910,
+     "lane": "tool",
+     "type": "tool.result",
+     "label": "check_availability",
+     "id": "a2",
+     "meta": {
+      "open": true
+     }
+    },
+    {
+     "t": 3000,
+     "lane": "run",
+     "type": "approval.requested",
+     "label": "book Fri 20:00 \u00b7 Nari",
+     "meta": {
+      "tool": "reserve"
+     }
+    },
+    {
+     "t": 9400,
+     "lane": "user",
+     "type": "approval.granted",
+     "label": "approved"
+    },
+    {
+     "t": 9460,
+     "lane": "tool",
+     "type": "tool.call",
+     "label": "reserve",
+     "id": "b1"
+    },
+    {
+     "t": 10120,
+     "lane": "tool",
+     "type": "tool.result",
+     "label": "reserve",
+     "id": "b1",
+     "meta": {
+      "confirmation": "NR-8823"
+     }
+    },
+    {
+     "t": 10200,
+     "lane": "model",
+     "type": "text.delta",
+     "label": "Booked \u2014 Nari, Friday 20:00, confirmation NR-8823."
+    },
+    {
+     "t": 10280,
+     "lane": "run",
+     "type": "run.completed",
+     "meta": {
+      "ms": 10280
+     }
+    }
+   ]
+  }
+ ]
+}
